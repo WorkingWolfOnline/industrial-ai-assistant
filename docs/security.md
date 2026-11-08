@@ -367,9 +367,7 @@ SECURITY INCIDENT RESPONSE
 
 For security concerns or to report vulnerabilities:
 
-- **Email**: security@yourproject.org
-- **PGP Key**: [Download public key]
-- **Bug Bounty**: [Program details]
+- **GitHub Issues**: [Report an issue](https://github.com/WorkingWolfOnline/industrial-ai-assistant/issues)
 
 Please do not disclose security issues publicly until they have been addressed.
 
