@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "industrial-ai-assistant"
+version = "0.1.0"
+description = "Open-source framework for LLM-based AI assistants in industrial automation via MCP protocol"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "WorkingWolfOnline" }]
+keywords = ["industrial", "AI", "MCP", "DCS", "SCADA", "OPC UA"]
+dependencies = []
+
+[project.optional-dependencies]
+opcua = ["asyncua>=1.0.0"]
+mcp = ["mcp>=1.0.0"]
+test = ["pytest>=7.4.0", "pytest-asyncio>=0.21.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

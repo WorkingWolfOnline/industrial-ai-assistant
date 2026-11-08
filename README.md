@@ -127,28 +127,32 @@ industrial-ai-assistant/
 ├── docs/
 │   ├── architecture.md           # System architecture documentation
 │   ├── security.md               # Security guidelines
+│   ├── feasibility-study.md      # Feasibility study
 │   ├── mcp-integration.md        # MCP protocol integration guide
 │   └── expert-knowledge.md       # How to embed domain expertise
 ├── src/
-│   ├── mcp_server/               # MCP server implementation
-│   │   ├── server.py
-│   │   └── tools/
-│   ├── knowledge_base/           # Knowledge base structures
-│   │   ├── equipment.py
-│   │   ├── process.py
-│   │   └── expert_patterns.py
-│   ├── analyzers/                # Analysis engines
-│   │   ├── pressure_analyzer.py
-│   │   ├── trend_analyzer.py
-│   │   └── causal_analyzer.py
-│   └── interfaces/               # User interfaces
-│       ├── control_room.py
-│       └── field_assistant.py
+│   └── industrial_ai/
+│       ├── __init__.py           # MCPClient, ExpertAnalyzer
+│       ├── models.py             # Unified data models
+│       ├── analyzers/            # Analysis engines
+│       │   ├── pressure_analyzer.py
+│       │   ├── level_analyzer.py
+│       │   ├── trend_analyzer.py
+│       │   └── causal_analyzer.py
+│       ├── knowledge_base/       # Expert knowledge structures
+│       │   ├── expert_patterns.py
+│       │   └── equipment.py
+│       ├── adapters/             # Protocol adapters
+│       │   ├── base.py           #   Unified interface
+│       │   ├── simulation.py     #   Simulation (no hardware)
+│       │   └── opcua.py          #   OPC UA (optional)
+│       └── mcp_server/           # MCP tool server
+│           └── server.py
 ├── examples/
-│   ├── chemical_process/         # Chemical industry example
-│   ├── power_plant/              # Power generation example
-│   └── oil_gas/                  # Oil & gas example
-├── tests/
+│   └── chemical_process/
+│       └── demo.py               # Runnable demo
+├── pyproject.toml
+├── requirements.txt
 └── README.md
 ```
 
@@ -165,14 +169,17 @@ Node.js 18+ (for MCP components)
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/industrial-ai-assistant.git
+git clone https://github.com/WorkingWolfOnline/industrial-ai-assistant.git
 cd industrial-ai-assistant
 
-# Install dependencies
-pip install -r requirements.txt
+# 核心框架基于 Python 标准库，无需第三方依赖即可运行
+python examples/chemical_process/demo.py --report
 
-# Install MCP SDK
-npm install @modelcontextprotocol/sdk
+# (可选) 安装为包，便于 `import industrial_ai`
+pip install -e .
+
+# (可选) MCP Server
+pip install mcp
 ```
 
 #### Basic Usage
@@ -180,27 +187,26 @@ npm install @modelcontextprotocol/sdk
 ```python
 from industrial_ai import MCPClient, ExpertAnalyzer
 
-# Initialize MCP client
-client = MCPClient(
-    server_url="opc.tcp://your-dcs-server:4840",
-    read_only=True  # Safety: enforce read-only mode
+# 初始化客户端（默认仿真适配器，read_only=True；可传入 OPCUAAdapter 接真实设备）
+client = MCPClient(read_only=True)
+
+# 初始化专家分析器
+analyzer = ExpertAnalyzer()
+
+# 读取过程数据
+data = client.read_process_data(
+    tags=["REACTOR_PRESSURE_IN", "REACTOR_PRESSURE_OUT"]
 )
 
-# Connect to knowledge base
-knowledge_base = ExpertAnalyzer.load_knowledge_base("examples/chemical_process")
+# 应用专家分析（压力平衡）
+result = analyzer.analyze_pressure(
+    data["REACTOR_PRESSURE_IN"].value,
+    data["REACTOR_PRESSURE_OUT"].value,
+)
 
-# Analyze real-time data
-while True:
-    data = client.read_process_data(tags=["TEMP_001", "PRESS_001", "FLOW_001"])
-
-    # Apply expert analysis
-    result = knowledge_base.analyze(data)
-
-    if result.has_anomaly:
-        print(f"⚠️ Anomaly detected: {result.description}")
-        print(f"💡 Recommendation: {result.recommendation}")
-
-    time.sleep(5)
+if result.has_anomaly:
+    print(f"⚠️ Anomaly: {result.issue}")
+    print(f"💡 Recommendation: {result.recommendation}")
 ```
 
 ### Integration Examples
@@ -210,16 +216,14 @@ while True:
 ```python
 from industrial_ai.adapters import OPCUAAdapter
 
+# 连接真实 DCS/SCADA 前务必完成安全评估，仅配置只读权限
 adapter = OPCUAAdapter(
     endpoint="opc.tcp://dcs-server:4840",
-    security_policy="Basic256Sha256"
+    security_policy="Basic256Sha256",
 )
 
-# Read process variables
-values = adapter.read_values([
-    "ns=2;s=Reactor.Temperature",
-    "ns=2;s=Reactor.Pressure"
-])
+# 读取单个点位（只读）
+param = adapter.read_parameter("ns=2;s=Reactor.Temperature")
 ```
 
 #### MCP Server Configuration
@@ -342,14 +346,11 @@ class ExpertAnalyzer:
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/industrial-ai-assistant.git
+git clone https://github.com/WorkingWolfOnline/industrial-ai-assistant.git
 cd industrial-ai-assistant
 
-# 安装依赖
-pip install -r requirements.txt
-
-# 运行示例
-python examples/chemical_process/demo.py
+# 核心框架基于 Python 标准库，无需第三方依赖即可运行
+python examples/chemical_process/demo.py --report
 ```
 
 ### 文档
@@ -377,8 +378,8 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 
 ## Contact
 
-- Issues: [GitHub Issues](https://github.com/yourusername/industrial-ai-assistant/issues)
-- Discussions: [GitHub Discussions](https://github.com/yourusername/industrial-ai-assistant/discussions)
+- Issues: [GitHub Issues](https://github.com/WorkingWolfOnline/industrial-ai-assistant/issues)
+- Discussions: [GitHub Discussions](https://github.com/WorkingWolfOnline/industrial-ai-assistant/discussions)
 
 ---
 
