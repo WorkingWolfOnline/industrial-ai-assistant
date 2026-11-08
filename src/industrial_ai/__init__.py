@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from .models import AlertLevel, AnalysisResult, ProcessParameter
+from .models import AlertLevel, AnalysisResult, ProcessParameter, DataQuality
 from .analyzers import PressureAnalyzer, LevelAnalyzer, TrendAnalyzer, CausalAnalyzer
 from .adapters import DataAdapter, SimulationAdapter
 from .knowledge_base import ExpertPatterns, EquipmentTemplate
@@ -20,6 +20,7 @@ __version__ = "0.1.0"
 
 __all__ = [
     "AlertLevel",
+    "DataQuality",
     "AnalysisResult",
     "ProcessParameter",
     "PressureAnalyzer",

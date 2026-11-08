@@ -20,6 +20,14 @@ class AlertLevel(str, Enum):
     CRITICAL = "critical"
 
 
+class DataQuality(str, Enum):
+    """数据质量码（对应工业数据质量标识）。"""
+
+    GOOD = "GOOD"
+    BAD = "BAD"
+    UNCERTAIN = "UNCERTAIN"
+
+
 def utcnow() -> datetime:
     """返回带时区信息的当前时间，便于日志与审计。"""
     return datetime.now(timezone.utc)
@@ -47,13 +55,13 @@ class ProcessParameter:
     normal_range: tuple = (0.0, 100.0)
     alarm_high: Optional[float] = None
     alarm_low: Optional[float] = None
-    quality: str = "GOOD"
+    quality: DataQuality = DataQuality.GOOD
     writable: bool = False
 
     @property
     def status(self) -> AlertLevel:
         """根据数值与报警限判定状态。"""
-        if self.quality == "BAD":
+        if self.quality == DataQuality.BAD:
             return AlertLevel.CRITICAL
         if self.alarm_high is not None and self.value > self.alarm_high:
             return AlertLevel.CRITICAL

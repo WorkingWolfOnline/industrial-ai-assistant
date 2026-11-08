@@ -57,12 +57,11 @@ Enhancement suggestions are welcome! Please:
 # Python 3.9+
 python --version
 
-# Node.js 18+ (for MCP components)
-node --version
-
 # Git
 git --version
 ```
+
+> MCP 组件使用 Python SDK（``pip install mcp``），无需 Node.js。
 
 ### Setup
 
@@ -75,25 +74,17 @@ cd industrial-ai-assistant
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
-pip install -r requirements.txt
-pip install -r requirements-dev.txt
-
-# Install pre-commit hooks
-pre-commit install
+# Install dependencies (核心框架无必需第三方依赖)
+pip install -e .
 ```
 
 ### Running Tests
 
+> 测试套件尚在建设中。目前可通过运行示例验证核心功能：
+
 ```bash
-# Run all tests
-pytest
-
-# Run with coverage
-pytest --cov=industrial_ai --cov-report=html
-
-# Run specific test file
-pytest tests/test_analyzers.py
+# 生成分析报告（验证分析链路）
+python examples/chemical_process/demo.py --report
 ```
 
 ## Project Structure
@@ -103,15 +94,15 @@ industrial-ai-assistant/
 ├── src/
 │   └── industrial_ai/          # Main package
 │       ├── __init__.py
+│       ├── models.py           # Unified data models
 │       ├── mcp_server/         # MCP server implementation
 │       ├── knowledge_base/     # Knowledge base structures
 │       ├── analyzers/          # Analysis engines
-│       ├── adapters/           # Protocol adapters
-│       └── interfaces/         # User interfaces
-├── tests/                      # Test suite
+│       └── adapters/           # Protocol adapters
 ├── docs/                       # Documentation
 ├── examples/                   # Example implementations
-└── scripts/                    # Utility scripts
+├── pyproject.toml
+└── requirements.txt
 ```
 
 ## Coding Standards
@@ -174,20 +165,7 @@ class PressureAnalyzer:
 
 ### Testing
 
-```python
-# Example test
-def test_pressure_analyzer_detects_negative_differential():
-    """Test that analyzer detects negative pressure differential."""
-    analyzer = PressureAnalyzer(config={"threshold": 0.1})
-
-    result = analyzer.analyze(
-        upstream_pressure=2.0,
-        downstream_pressure=3.0  # Higher than upstream
-    )
-
-    assert result.status == "critical"
-    assert "negative" in result.issue.lower()
-```
+测试套件尚在建设中，欢迎贡献测试。分析函数应覆盖正常、预警、严重三类场景（可用 `examples/chemical_process/demo.py --report` 作为参考输入）。
 
 ## Safety Considerations
 

@@ -162,7 +162,6 @@ industrial-ai-assistant/
 
 ```bash
 Python 3.9+
-Node.js 18+ (for MCP components)
 ```
 
 #### Installation
@@ -231,12 +230,11 @@ param = adapter.read_parameter("ns=2;s=Reactor.Temperature")
 ```json
 {
   "mcpServers": {
-    "industrial-dcs": {
+    "industrial-ai": {
       "command": "python",
       "args": ["-m", "industrial_ai.mcp_server"],
       "env": {
-        "DCS_ENDPOINT": "opc.tcp://localhost:4840",
-        "READ_ONLY_MODE": "true"
+        "PYTHONPATH": "/path/to/industrial-ai-assistant/src"
       }
     }
   }
