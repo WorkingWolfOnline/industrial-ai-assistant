@@ -115,9 +115,9 @@ We follow PEP 8 with some modifications:
 # Example of preferred style
 class PressureAnalyzer:
     """
-    Analyze pressure systems using expert knowledge.
+    Analyze pressure systems using heuristic rules.
 
-    This class implements domain expert reasoning patterns
+    This class implements heuristic rules
     for industrial pressure system analysis.
     """
 

@@ -91,7 +91,7 @@ class IndustrialTools:
         return EquipmentTemplate.get(equipment_type)
 
     def list_expert_patterns(self) -> dict:
-        """列出内置的专家思维模式。"""
+        """列出内置的启发式模式（教学示例）。"""
         return ExpertPatterns.all_patterns()
 
 

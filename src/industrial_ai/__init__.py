@@ -1,7 +1,7 @@
 """Industrial AI Assistant Framework.
 
 面向工业自动化（ICS/DCS）的 AI 助手开源框架，通过 MCP 协议与
-协议适配器（OPC UA / 仿真）集成，并嵌入领域专家知识。
+协议适配器（OPC UA / 仿真）集成，并嵌入启发式分析规则。
 
 安全原则：默认只读，所有建议需人工确认，绝不直接控制 DCS/PLC。
 """
@@ -64,7 +64,7 @@ class MCPClient:
 
 
 class ExpertAnalyzer:
-    """高级分析器，聚合各领域专家分析引擎。"""
+    """高级分析器（类名沿用历史），聚合各启发式分析引擎。"""
 
     def __init__(self):
         self.pressure = PressureAnalyzer()

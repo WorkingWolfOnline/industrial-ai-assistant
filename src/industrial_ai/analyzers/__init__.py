@@ -1,4 +1,4 @@
-"""分析引擎：将领域专家思维模式实现为可调用的分析逻辑。"""
+"""分析引擎：将启发式规则实现为可调用的分析逻辑（非专家系统）。"""
 
 from .pressure_analyzer import PressureAnalyzer
 from .level_analyzer import LevelAnalyzer

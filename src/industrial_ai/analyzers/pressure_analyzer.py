@@ -1,6 +1,6 @@
-"""压力平衡分析引擎。
+"""压力平衡分析引擎（启发式规则，非专家系统）。
 
-专家启发式：所有流体系统本质都是压力平衡问题。
+启发式：所有流体系统本质都是压力平衡问题。
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from ..models import AlertLevel, AnalysisResult, utcnow
 
 
 class PressureAnalyzer:
-    """实现压力系统的专家分析模式。"""
+    """实现压力系统的启发式分析规则（教育示例）。"""
 
     def analyze(
         self,

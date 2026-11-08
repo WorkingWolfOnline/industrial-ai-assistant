@@ -1,342 +1,103 @@
-# System Architecture
+# 系统架构（当前实现）
 
-## Overview
+> 本文档描述的是**本仓库实际包含的代码结构**，不是愿景架构。未实现的部分在文末明确列出。
 
-This document describes the architecture of the Industrial AI Assistant Framework, designed for integrating LLM-based AI systems with industrial control systems in a safe, read-only manner.
+## 概述
 
-## Design Principles
-
-### 1. Safety First
-- **Read-Only Default**: AI systems never write to DCS directly
-- **Human-in-the-Loop**: All control recommendations require operator confirmation
-- **Fail-Safe**: AI failures must not affect DCS operation
-- **Defense in Depth**: Multiple layers of security controls
-
-### 2. Domain Expertise Embedding
-- **Knowledge Representation**: Structured storage of expert thinking patterns
-- **Reasoning Engine**: Implementation of domain-specific analysis logic
-- **Continuous Learning**: Feedback loop for knowledge refinement
-
-### 3. Open Standards
-- **MCP Protocol**: Model Context Protocol for AI-tool integration
-- **OPC UA**: Industry standard for industrial communication
-- **Modular Design**: Pluggable components for different environments
-
-## System Components
+本仓库是一个**只读的工业监控分析参考实现**，代码结构如下：
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           PRESENTATION LAYER                                 │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐          │
-│  │  Control Room    │  │  Field Assistant │  │  Web Dashboard   │          │
-│  │  Interface       │  │  (Mobile)        │  │                  │          │
-│  └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘          │
-└───────────┼─────────────────────┼─────────────────────┼────────────────────┘
-            │                     │                     │
-            └─────────────────────┼─────────────────────┘
-                                  ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         AI ASSISTANT LAYER                                   │
-│                                                                              │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                     LLM Core (Claude/GPT/etc)                        │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
-│  │  │   Natural    │  │   Context    │  │   Response   │              │   │
-│  │  │   Language   │  │   Awareness  │  │   Generation │              │   │
-│  │  │   Understanding│ │              │  │              │              │   │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘              │   │
-│  └────────────────────────────────────┬────────────────────────────────┘   │
-│                                       │                                      │
-│  ┌────────────────────────────────────┼────────────────────────────────┐   │
-│  │                         MCP SERVER                                  │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
-│  │  │   Tool       │  │   Resource   │  │   Prompt     │              │   │
-│  │  │   Registry   │  │   Registry   │  │   Registry   │              │   │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘              │   │
-│  └────────────────────────────────────┬────────────────────────────────┘   │
-└───────────────────────────────────────┼────────────────────────────────────┘
-                                        │
-┌───────────────────────────────────────┼────────────────────────────────────┐
-│                         INTEGRATION LAYER                                    │
-│                                       │                                      │
-│  ┌────────────────────────────────────┼────────────────────────────────┐   │
-│  │                      COMPOSIO AGENT                                 │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
-│  │  │   Action     │  │   Trigger    │  │   Workflow   │              │   │
-│  │  │   Executor   │  │   Handler    │  │   Engine     │              │   │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘              │   │
-│  └────────────────────────────────────┬────────────────────────────────┘   │
-│                                       │                                      │
-│  ┌────────────────────────────────────┼────────────────────────────────┐   │
-│  │                    PROTOCOL ADAPTERS                                │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
-│  │  │   OPC UA     │  │   Modbus     │  │   Custom     │              │   │
-│  │  │   Adapter    │  │   Adapter    │  │   API        │              │   │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘              │   │
-│  └────────────────────────────────────┬────────────────────────────────┘   │
-└───────────────────────────────────────┼────────────────────────────────────┘
-                                        │
-┌───────────────────────────────────────┼────────────────────────────────────┐
-│                    DATA ACCESS LAYER (READ-ONLY)                             │
-│                                       │                                      │
-│  ┌────────────────────────────────────┼────────────────────────────────┐   │
-│  │                      DATA DIODE / GATEWAY                           │   │
-│  │                    (Unidirectional Data Flow)                       │   │
-│  │                         READ-ONLY ACCESS                            │   │
-│  └────────────────────────────────────┬────────────────────────────────┘   │
-└───────────────────────────────────────┼────────────────────────────────────┘
-                                        │
-┌───────────────────────────────────────┼────────────────────────────────────┐
-│                    INDUSTRIAL CONTROL SYSTEM                                 │
-│                                       │                                      │
-│  ┌────────────────────────────────────┼────────────────────────────────┐   │
-│  │                         DCS/SCADA                                   │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
-│  │  │   Process    │  │   Historical │  │   Alarm      │              │   │
-│  │  │   Database   │  │   Database   │  │   Server     │              │   │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘              │   │
-│  └────────────────────────────────────────────────────────────────────┘   │
-└────────────────────────────────────────────────────────────────────────────┘
+MCP 工具服务（9 个工具）
+        │
+        ▼
+分析引擎（压力 / 液位 / 趋势 / 因果，启发式规则）
+        │
+        ▼
+数据适配器（仿真 / OPC UA，只读）
 ```
 
-## Component Details
+---
 
-### 1. MCP Server
+## 实际组件
 
-The Model Context Protocol (MCP) server exposes industrial data and analysis capabilities to the LLM.
+### 1. 数据模型（`models.py`）
 
-#### Tools
+统一数据结构，贯穿「采集 → 分析 → 建议」全链路：
 
-```python
-# Example tool definition
-@mcp.tool()
-def analyze_pressure_system(
-    upstream_pressure: float,
-    downstream_pressure: float,
-    design_pressure_diff: float = 0.2
-) -> dict:
-    """
-    Analyze pressure balance in a fluid system.
+- `ProcessParameter`：过程参数读数（值、单位、正常区间、报警限、数据质量）
+- `AnalysisResult`：分析结果（状态、问题、建议、因果链、置信度）
+- `AlertLevel`：告警级别（normal / warning / critical）
+- `DataQuality`：数据质量码（GOOD / BAD / UNCERTAIN）
 
-    Args:
-        upstream_pressure: Pressure at system inlet (MPa)
-        downstream_pressure: Pressure at system outlet (MPa)
-        design_pressure_diff: Expected pressure differential (MPa)
+### 2. 分析引擎（`analyzers/`）
 
-    Returns:
-        Analysis result with status and recommendations
-    """
-    pressure_diff = upstream_pressure - downstream_pressure
+四个**启发式规则**分析器（不是专家系统、不是机器学习模型）：
 
-    if pressure_diff < 0:
-        return {
-            "status": "critical",
-            "issue": "Negative pressure differential",
-            "recommendation": "Check pump operation and upstream blockages"
-        }
+| 分析器 | 规则逻辑（示例） |
+| --- | --- |
+| `PressureAnalyzer` | 压差为负 → 严重；偏离设计压差 → 预警 |
+| `LevelAnalyzer` | 液位偏离且进出流量不平衡 → 预警 |
+| `TrendAnalyzer` | 历史序列斜率超阈值 → 预警 |
+| `CausalAnalyzer` | 症状 → 可能原因映射 |
 
-    if abs(pressure_diff - design_pressure_diff) > 0.1:
-        return {
-            "status": "warning",
-            "issue": "Pressure differential deviation",
-            "actual_diff": pressure_diff,
-            "expected_diff": design_pressure_diff
-        }
+> 这些规则是**通用示例**，用于说明「领域知识可以怎样被编码」，不代表真实工艺准确性。
 
-    return {"status": "normal", "pressure_diff": pressure_diff}
-```
+### 3. 知识库（`knowledge_base/`）
 
-#### Resources
+- `ExpertPatterns`：几条启发式模式（压力平衡、因果链、设计意图）的**文字描述**
+- `EquipmentTemplate`：通用设备模板（reactor / pump / vessel），均为**示例数据**
 
-```python
-@mcp.resource("knowledge_base://equipment/{equipment_id}")
-def get_equipment_knowledge(equipment_id: str) -> str:
-    """Retrieve equipment documentation and expert knowledge."""
-    return knowledge_base.get_equipment_info(equipment_id)
-```
+### 4. 协议适配器（`adapters/`）
 
-### 2. Knowledge Base
+- `DataAdapter`：统一只读接口
+- `SimulationAdapter`：仿真数据（默认，支持场景切换与故障注入）
+- `OPCUAAdapter`：OPC UA 异步接口（可选依赖 `asyncua`，仅骨架）
 
-Structured storage of domain expertise:
+### 5. MCP 工具服务（`mcp_server/`）
 
-```yaml
-# knowledge_base/structure.yaml
-expert_patterns:
-  pressure_analysis:
-    description: "Analyze pressure relationships in fluid systems"
-    rules:
-      - "Low pressure cannot feed high pressure systems"
-      - "Pressure differential indicates flow resistance"
-      - "Sudden pressure drops indicate blockages"
+把分析能力封装为 MCP 工具（共 9 个），供 LLM 客户端调用：数据读取、场景切换、压力/液位/趋势/因果分析、设备模板查询、专家模式查询。
 
-  causal_chain:
-    description: "Derive root causes from symptoms"
-    methodology:
-      - "Identify observable symptoms"
-      - "Trace upstream dependencies"
-      - "Identify common cause factors"
-      - "Verify with multiple data points"
+---
 
-equipment_templates:
-  reactor:
-    common_parameters:
-      - temperature
-      - pressure
-      - level
-    common_issues:
-      - name: "temperature_runaway"
-        symptoms: ["temp_rising", "pressure_rising"]
-        causes: ["cooling_failure", "feed_increase", "reaction_acceleration"]
-```
-
-### 3. Security Architecture
+## 数据流（实际）
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    SECURITY ZONES                           │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐ │
-│  │   Zone 3    │      │   Zone 2    │      │   Zone 1    │ │
-│  │  (Corporate)│ ←──→ │   (DMZ)     │ ←──→ │  (Control)  │ │
-│  │             │      │             │      │             │ │
-│  │  AI Layer   │      │ Data Gateway│      │   DCS       │ │
-│  │  Web Apps   │      │  Historian  │      │   PLC       │ │
-│  └─────────────┘      └─────────────┘      └─────────────┘ │
-│        ↑                                          ↑         │
-│        │         ┌─────────────────┐             │         │
-│        └────────→│   DATA DIODE    │←────────────┘         │
-│                  │ (Unidirectional)│                       │
-│                  └─────────────────┘                       │
-│                                                             │
-│  Security Controls:                                         │
-│  • Firewall between each zone                               │
-│  • Data diode ensures unidirectional flow                   │
-│  • No direct network path from Zone 3 to Zone 1             │
-│  • All connections use encrypted protocols                  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+SimulationAdapter / OPCUAAdapter（只读）
+        │  ProcessParameter
+        ▼
+Analyzers（启发式规则）
+        │  AnalysisResult
+        ▼
+MCP Tools（暴露给 LLM，仅建议）
 ```
 
-## Data Flow
+---
 
-### 1. Real-Time Monitoring Flow
+## 安全原则
 
-```
-DCS → OPC UA Server → Data Gateway → Composio → MCP Server → LLM → UI
-  │          │              │              │            │       │
-  │          │              │              │            │       └─→ Display
-  │          │              │              │            └─→ Analysis
-  │          │              │              └─→ Data Normalization
-  │          │              └─→ Security Filter
-  │          └─→ Protocol Translation
-  └─→ Raw Process Data
-```
+- **只读**：不提供任何写操作工具。
+- **人在回路**：所有分析结果仅供建议，需人工确认。
+- **安全在硬件**：本仓库不涉及安全仪表系统，AI 不替代安全功能。
 
-### 2. Analysis Request Flow
+---
 
-```
-User Query → LLM → MCP Tool Call → Composio Action → DCS Read → Response
-    │          │         │              │              │          │
-    │          │         │              │              │          └─→ Natural Language
-    │          │         │              │              └─→ Raw Data
-    │          │         │              └─→ Protocol Adapter
-    │          │         └─→ Tool Selection
-    │          └─→ Intent Understanding
-    └─→ Natural Language Input
-```
+## 明确未包含的部分
 
-## Deployment Patterns
+以下内容**不在此仓库中**（可能在早期文档里被描述过，但从未实现）：
 
-### Pattern 1: On-Premise Deployment
+- ❌ Composio 集成
+- ❌ Modbus / 自定义 API 适配器
+- ❌ 数据二极管 / 网关（网络隔离设备）
+- ❌ 控制室界面 / 现场端 / Web 仪表盘
+- ❌ Redis 缓存、负载均衡、水平扩展
+- ❌ LLM 推理接入（本仓库只暴露 MCP 工具，不含 LLM 调用）
+- ❌ 真实 DCS/PLC 连接配置
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    FACTORY NETWORK                           │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │              INDUSTRIAL DMZ                          │   │
-│  │  ┌──────────────┐  ┌──────────────┐                │   │
-│  │  │  AI Server   │  │  Data Gateway│                │   │
-│  │  │  (Docker)    │  │  (Read-Only) │                │   │
-│  │  └──────────────┘  └──────────────┘                │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                         │                                   │
-│  ┌──────────────────────┼──────────────────────────────┐   │
-│  │              CONTROL NETWORK (Isolated)              │   │
-│  │  ┌──────────────┐  ┌──────────────┐                │   │
-│  │  │     DCS      │  │     PLC      │                │   │
-│  │  └──────────────┘  └──────────────┘                │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
+---
 
-### Pattern 2: Cloud-Edge Hybrid
+## 下一步
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      CLOUD (AWS/Azure/GCP)                   │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │  ┌──────────────┐  ┌──────────────┐                │   │
-│  │  │   LLM API    │  │  Web Dashboard│                │   │
-│  │  │  (Claude/etc)│  │  (React/Vue) │                │   │
-│  │  └──────────────┘  └──────────────┘                │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                         ↑ VPN/Private Link                  │
-└─────────────────────────┼───────────────────────────────────┘
-                          │
-┌─────────────────────────┼───────────────────────────────────┐
-│                    FACTORY EDGE                              │
-│  ┌──────────────────────┼──────────────────────────────┐   │
-│  │              ┌───────┴───────┐                      │   │
-│  │              │  Edge Gateway │                      │   │
-│  │              │  (MCP Server) │                      │   │
-│  │              └───────┬───────┘                      │   │
-│  │                      │                               │   │
-│  │  ┌───────────────────┼──────────────────────────┐   │   │
-│  │  │              CONTROL NETWORK                  │   │   │
-│  │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐   │   │   │
-│  │  │  │   DCS    │  │   PLC    │  │  Sensors │   │   │   │
-│  │  │  └──────────┘  └──────────┘  └──────────┘   │   │   │
-│  │  └─────────────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Performance Considerations
-
-| Metric | Target | Implementation |
-|:---|:---:|:---|
-| Data Latency | < 5 seconds | Edge caching + WebSocket |
-| Query Response | < 3 seconds | LLM streaming + caching |
-| System Availability | 99.9% | Redundant gateways |
-| Data Throughput | 1000 tags/second | Optimized OPC UA batching |
-
-## Scalability
-
-### Horizontal Scaling
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    LOAD BALANCER                             │
-│                         │                                    │
-│         ┌───────────────┼───────────────┐                   │
-│         ▼               ▼               ▼                   │
-│  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐        │
-│  │  MCP Server  │ │  MCP Server  │ │  MCP Server  │        │
-│  │     #1       │ │     #2       │ │     #N       │        │
-│  └──────────────┘ └──────────────┘ └──────────────┘        │
-│         │               │               │                   │
-│         └───────────────┼───────────────┘                   │
-│                         ▼                                   │
-│              ┌─────────────────────┐                        │
-│              │   Shared Cache      │                        │
-│              │   (Redis)           │                        │
-│              └─────────────────────┘                        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## Next Steps
-
-1. Review [Security Guidelines](security.md)
-2. Explore [MCP Integration](mcp-integration.md)
-3. Learn about [Expert Knowledge Embedding](expert-knowledge.md)
+1. 阅读 [安全指南](security.md)
+2. 阅读 [部署前安全清单](safety-checklist.md)
+3. 阅读 [MCP 集成](mcp-integration.md)
+4. 阅读 [规则扩展](expert-knowledge.md)

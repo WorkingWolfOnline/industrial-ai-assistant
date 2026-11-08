@@ -34,7 +34,7 @@ mcp.run()  # 默认 stdio 传输，供本地 MCP 客户端连接
   "mcpServers": {
     "industrial-ai": {
       "command": "python",
-      "args": ["-c", "from industrial_ai import build_mcp_server; build_mcp_server().run()"],
+      "args": ["-m", "industrial_ai.mcp_server"],
       "env": {
         "PYTHONPATH": "/path/to/industrial-ai-assistant/src"
       }
@@ -47,8 +47,15 @@ mcp.run()  # 默认 stdio 传输，供本地 MCP 客户端连接
 
 | 工具 | 说明 | 只读 |
 | --- | --- | --- |
+| `read_parameter` | 读取单个仿真点位 | ✅ |
+| `list_scenarios` | 列出可用仿真场景 | ✅ |
+| `set_scenario` | 切换仿真场景（故障注入） | ✅ |
 | `analyze_pressure_system` | 分析流体系统压力平衡 | ✅ |
 | `analyze_level_system` | 分析容器液位质量平衡 | ✅ |
+| `analyze_trend` | 分析点位历史趋势 | ✅ |
+| `derive_causal_chain` | 根据症状推导因果链 | ✅ |
+| `get_equipment_template` | 查询通用设备模板 | ✅ |
+| `list_expert_patterns` | 列出内置启发式模式 | ✅ |
 
 ## 安全原则
 

@@ -12,7 +12,7 @@ class DataAdapter(ABC):
     """所有工业数据适配器的统一接口。
 
     上层（分析、MCP 工具）只依赖本接口，不关心底层是
-    OPC UA、Modbus、还是仿真器。默认只读。
+    OPC UA 还是仿真器。默认只读。
     """
 
     read_only: bool = True
